@@ -34,6 +34,7 @@
 - Định vị: tọa độ, địa chỉ Glyph và ghi chú cổng dịch chuyển.
 - Hình ảnh: ảnh chụp màn hình gắn với hệ sao/hành tinh.
 - Nhiệm vụ: trạng thái, mục tiêu và hành tinh liên quan.
+- Part Corvette: tên, loại, class, bonus, giá (Units) và nguồn mua.
 
 ## Lưu ý sao lưu
 

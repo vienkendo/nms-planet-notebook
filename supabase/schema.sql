@@ -67,6 +67,26 @@ create table if not exists public.missions (
   updated_at timestamptz not null default now()
 );
 
+-- Corvette parts catalog (e.g. "Medusa-Class Reactor", price seen on the GTN).
+-- part_type and part_class are free text on purpose: the in-game part list can
+-- grow, and a CHECK list here would need a migration for every new part type.
+-- bonus_summary is free text because exact in-game stats are noted by hand.
+-- The unique (user_id, name) index also serves lookups by user_id.
+create table if not exists public.corvette_parts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  name text not null,
+  part_type text not null,
+  part_class text,
+  bonus_summary text,
+  price_units bigint check (price_units is null or price_units >= 0),
+  source text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
 create index if not exists star_systems_user_id_idx on public.star_systems(user_id);
 create index if not exists planets_user_id_idx on public.planets(user_id);
 create index if not exists planets_system_id_idx on public.planets(system_id);
@@ -78,6 +98,7 @@ alter table public.star_systems enable row level security;
 alter table public.planets enable row level security;
 alter table public.planet_images enable row level security;
 alter table public.missions enable row level security;
+alter table public.corvette_parts enable row level security;
 
 drop policy if exists "owner manages own star systems" on public.star_systems;
 create policy "owner manages own star systems"
@@ -127,6 +148,12 @@ with check (
   )
 );
 
+drop policy if exists "owner manages own corvette parts" on public.corvette_parts;
+create policy "owner manages own corvette parts"
+on public.corvette_parts for all to authenticated
+using (user_id = (select auth.uid()))
+with check (user_id = (select auth.uid()));
+
 drop trigger if exists star_systems_updated_at on public.star_systems;
 create trigger star_systems_updated_at before update on public.star_systems
 for each row execute function public.set_updated_at();
@@ -137,6 +164,10 @@ for each row execute function public.set_updated_at();
 
 drop trigger if exists missions_updated_at on public.missions;
 create trigger missions_updated_at before update on public.missions
+for each row execute function public.set_updated_at();
+
+drop trigger if exists corvette_parts_updated_at on public.corvette_parts;
+create trigger corvette_parts_updated_at before update on public.corvette_parts
 for each row execute function public.set_updated_at();
 
 -- Storage:

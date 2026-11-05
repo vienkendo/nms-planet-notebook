@@ -45,6 +45,21 @@ Schema sẽ được triển khai trong Supabase PostgreSQL. Đây là thiết k
 - `notes`: ghi chú.
 - `created_at`, `updated_at`: thời gian.
 
+## Bảng `corvette_parts`
+
+Danh mục part của Corvette (reactor, tractor beam, ...) kèm giá và nguồn.
+
+- `id`: UUID.
+- `user_id`: chủ sở hữu.
+- `name`: tên part, ví dụ `Medusa-Class Reactor`. Duy nhất theo từng `user_id`.
+- `part_type`: loại part, ví dụ `reactor`, `tractor_beam`. Là text tự do để thêm loại mới không cần migration.
+- `part_class`: class/dòng của part, ví dụ `Medusa`.
+- `bonus_summary`: mô tả ngắn bonus/chỉ số, ghi tay từ trong game.
+- `price_units`: giá bằng Units (số nguyên, không âm), ví dụ `1750000`.
+- `source`: nơi mua hoặc nguồn dữ liệu, ví dụ `GTN`, `Corvette Workshop`.
+- `notes`: ghi chú tự do.
+- `created_at`, `updated_at`: thời gian.
+
 ## Bảo mật
 
 Tất cả bảng cần bật RLS. Chính sách SELECT/INSERT/UPDATE/DELETE phải giới hạn `user_id = auth.uid()`. Storage cần chính sách tương ứng theo đường dẫn và chủ sở hữu. Không xem việc ẩn nút giao diện là biện pháp bảo mật.
