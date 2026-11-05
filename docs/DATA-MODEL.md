@@ -60,6 +60,29 @@ Danh mục part của Corvette (reactor, tractor beam, ...) kèm giá và nguồ
 - `notes`: ghi chú tự do.
 - `created_at`, `updated_at`: thời gian.
 
+### Ví dụ bản ghi
+
+Số liệu lấy từ màn hình chọn part trong Corvette Workshop (Manoeuvrability +6%, Boost +12%) và giá niêm yết 1,750,000 Units trên GTN.
+
+| Cột | Giá trị |
+|---|---|
+| `name` | `Medusa-Class Reactor` |
+| `part_type` | `reactor` |
+| `part_class` | `Medusa` |
+| `bonus_summary` | `Manoeuvrability +6%, Boost +12%` |
+| `price_units` | `1750000` |
+| `source` | `GTN` |
+
+```sql
+insert into public.corvette_parts
+  (name, part_type, part_class, bonus_summary, price_units, source)
+values
+  ('Medusa-Class Reactor', 'reactor', 'Medusa',
+   'Manoeuvrability +6%, Boost +12%', 1750000, 'GTN');
+```
+
+`user_id` tự điền bằng `auth.uid()` khi ghi qua client đã đăng nhập. Trong Supabase SQL Editor không có phiên đăng nhập, nên phải truyền `user_id` tường minh.
+
 ## Bảo mật
 
 Tất cả bảng cần bật RLS. Chính sách SELECT/INSERT/UPDATE/DELETE phải giới hạn `user_id = auth.uid()`. Storage cần chính sách tương ứng theo đường dẫn và chủ sở hữu. Không xem việc ẩn nút giao diện là biện pháp bảo mật.
