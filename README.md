@@ -35,6 +35,7 @@
 - Hình ảnh: ảnh chụp màn hình gắn với hệ sao/hành tinh.
 - Nhiệm vụ: trạng thái, mục tiêu và hành tinh liên quan.
 - Part Corvette: tên, loại, class, bonus, giá (Units) và nguồn mua.
+- Cốt truyện (lore): tiêu đề, số hiệu Iteration, bản gốc, bản dịch tiếng Việt, nguồn và ghi chú; có thể gắn với hành tinh.
 
 ## Lưu ý sao lưu
 

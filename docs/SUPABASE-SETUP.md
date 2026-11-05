@@ -31,6 +31,7 @@ createdb nmstest
 psql -X -v ON_ERROR_STOP=1 -d nmstest -f supabase/tests/stub_supabase.sql
 psql -X -v ON_ERROR_STOP=1 -d nmstest -f supabase/schema.sql
 psql -X -v ON_ERROR_STOP=1 -d nmstest -f supabase/tests/corvette_parts.test.sql
+psql -X -v ON_ERROR_STOP=1 -d nmstest -f supabase/tests/lore_entries.test.sql
 ```
 
 ## Sao lưu

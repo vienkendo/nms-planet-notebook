@@ -62,3 +62,6 @@ jobs:
 
       - name: Run corvette_parts tests
         run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/corvette_parts.test.sql
+
+      - name: Run lore_entries tests
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/lore_entries.test.sql
