@@ -18,7 +18,7 @@ end
 $$;
 
 create schema if not exists auth;
-create table if not exists auth.users (id uuid primary key);
+create table if not exists auth.users (id uuid primary key, email text);
 
 -- Supabase reads the caller from the JWT claims; the tests set this setting.
 create or replace function auth.uid() returns uuid
@@ -32,7 +32,7 @@ grant usage on schema public to authenticated, anon;
 -- Supabase grants table privileges to both roles; RLS is what restricts rows.
 alter default privileges in schema public grant all on tables to authenticated, anon;
 
-insert into auth.users (id) values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+insert into auth.users (id, email) values
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'user-a@example.test'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'user-b@example.test')
 on conflict (id) do nothing;

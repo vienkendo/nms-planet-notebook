@@ -65,3 +65,14 @@ jobs:
 
       - name: Run lore_entries tests
         run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/lore_entries.test.sql
+
+      - name: Lore seed refuses to run without an owner account
+        run: |
+          if psql -X -q -v ON_ERROR_STOP=1 -f supabase/seeds/lore_entries.sql 2> "$RUNNER_TEMP/seed-error.txt"; then
+            echo "seed succeeded although no account matches its owner_email" >&2
+            exit 1
+          fi
+          grep -q 'No auth.users row with email' "$RUNNER_TEMP/seed-error.txt"
+
+      - name: Run lore seed test
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/lore_seed.test.sql
