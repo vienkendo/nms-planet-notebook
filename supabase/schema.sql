@@ -67,17 +67,59 @@ create table if not exists public.missions (
   updated_at timestamptz not null default now()
 );
 
+-- Corvette parts catalog (e.g. "Medusa-Class Reactor", price seen on the GTN).
+-- part_type and part_class are free text on purpose: the in-game part list can
+-- grow, and a CHECK list here would need a migration for every new part type.
+-- bonus_summary is free text because exact in-game stats are noted by hand.
+-- The unique (user_id, name) index also serves lookups by user_id.
+create table if not exists public.corvette_parts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  name text not null,
+  part_type text not null,
+  part_class text,
+  bonus_summary text,
+  price_units bigint check (price_units is null or price_units >= 0),
+  source text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
+-- Lore entries: in-game story text (e.g. a Boundary Failure terminal) with the
+-- original text, a Vietnamese translation and personal notes. One row is one
+-- terminal; its lines are stored in order, separated by newlines.
+-- iteration_code is text because in-game codes mix digits and letters.
+create table if not exists public.lore_entries (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  planet_id uuid references public.planets(id) on delete set null,
+  title text not null,
+  iteration_code text,
+  original_text text not null,
+  translation_vi text,
+  source text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index if not exists star_systems_user_id_idx on public.star_systems(user_id);
 create index if not exists planets_user_id_idx on public.planets(user_id);
 create index if not exists planets_system_id_idx on public.planets(system_id);
 create index if not exists planet_images_planet_id_idx on public.planet_images(planet_id);
 create index if not exists planet_images_user_id_idx on public.planet_images(user_id);
 create index if not exists missions_user_id_idx on public.missions(user_id);
+create index if not exists lore_entries_user_id_idx on public.lore_entries(user_id);
+create index if not exists lore_entries_planet_id_idx on public.lore_entries(planet_id);
 
 alter table public.star_systems enable row level security;
 alter table public.planets enable row level security;
 alter table public.planet_images enable row level security;
 alter table public.missions enable row level security;
+alter table public.corvette_parts enable row level security;
+alter table public.lore_entries enable row level security;
 
 drop policy if exists "owner manages own star systems" on public.star_systems;
 create policy "owner manages own star systems"
@@ -127,6 +169,27 @@ with check (
   )
 );
 
+drop policy if exists "owner manages own corvette parts" on public.corvette_parts;
+create policy "owner manages own corvette parts"
+on public.corvette_parts for all to authenticated
+using (user_id = (select auth.uid()))
+with check (user_id = (select auth.uid()));
+
+drop policy if exists "owner manages own lore entries" on public.lore_entries;
+create policy "owner manages own lore entries"
+on public.lore_entries for all to authenticated
+using (user_id = (select auth.uid()))
+with check (
+  user_id = (select auth.uid())
+  and (
+    planet_id is null
+    or exists (
+      select 1 from public.planets p
+      where p.id = planet_id and p.user_id = (select auth.uid())
+    )
+  )
+);
+
 drop trigger if exists star_systems_updated_at on public.star_systems;
 create trigger star_systems_updated_at before update on public.star_systems
 for each row execute function public.set_updated_at();
@@ -137,6 +200,14 @@ for each row execute function public.set_updated_at();
 
 drop trigger if exists missions_updated_at on public.missions;
 create trigger missions_updated_at before update on public.missions
+for each row execute function public.set_updated_at();
+
+drop trigger if exists corvette_parts_updated_at on public.corvette_parts;
+create trigger corvette_parts_updated_at before update on public.corvette_parts
+for each row execute function public.set_updated_at();
+
+drop trigger if exists lore_entries_updated_at on public.lore_entries;
+create trigger lore_entries_updated_at before update on public.lore_entries
 for each row execute function public.set_updated_at();
 
 -- Storage:

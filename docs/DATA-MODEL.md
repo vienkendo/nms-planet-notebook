@@ -45,6 +45,34 @@ Schema sẽ được triển khai trong Supabase PostgreSQL. Đây là thiết k
 - `notes`: ghi chú.
 - `created_at`, `updated_at`: thời gian.
 
+## Bảng `corvette_parts`
+
+Danh mục part của Corvette (reactor, tractor beam, ...) kèm giá và nguồn.
+
+- `id`: UUID.
+- `user_id`: chủ sở hữu.
+- `name`: tên part, ví dụ `Medusa-Class Reactor`. Duy nhất theo từng `user_id`.
+- `part_type`: loại part, ví dụ `reactor`, `tractor_beam`. Là text tự do để thêm loại mới không cần migration.
+- `part_class`: class/dòng của part, ví dụ `Medusa`.
+- `bonus_summary`: mô tả ngắn bonus/chỉ số, ghi tay từ trong game.
+- `price_units`: giá bằng Units (số nguyên, không âm), ví dụ `1750000`.
+- `source`: nơi mua hoặc nguồn dữ liệu, ví dụ `GTN`, `Corvette Workshop`.
+- `notes`: ghi chú tự do.
+- `created_at`, `updated_at`: thời gian.
+
+### Dữ liệu mẫu
+
+Hai entry đầu tiên nằm trong `supabase/seeds/lore_entries.sql`: terminal Boundary Failure và phần Starship Autodiagnostics ở đầu game (cùng số Iteration `2394829084924924924G`). Cách nạp xem mục "Nạp dữ liệu lore (seed)" trong `SUPABASE-SETUP.md`. Bản gốc trích từ ảnh chụp màn hình; bản dịch, thứ tự dòng và ghi chú được dựng lại từ ảnh, ý nghĩa chưa được xác minh bằng nguồn chính thức.
+
+Thêm một entry thủ công:
+
+```sql
+insert into public.lore_entries (title, original_text, translation_vi)
+values ('Tiêu đề', 'Bản gốc', 'Bản dịch');
+```
+
+Như bảng `corvette_parts`, `user_id` tự điền bằng `auth.uid()` khi ghi qua client đã đăng nhập; trong Supabase SQL Editor phải truyền `user_id` tường minh (seed làm việc này bằng cách tra email trong `auth.users`).
+
 ## Bảo mật
 
 Tất cả bảng cần bật RLS. Chính sách SELECT/INSERT/UPDATE/DELETE phải giới hạn `user_id = auth.uid()`. Storage cần chính sách tương ứng theo đường dẫn và chủ sở hữu. Không xem việc ẩn nút giao diện là biện pháp bảo mật.
