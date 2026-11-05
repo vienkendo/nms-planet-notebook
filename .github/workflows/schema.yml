@@ -1,0 +1,64 @@
+name: Schema
+
+# Applies supabase/schema.sql to a throwaway PostgreSQL database and runs the
+# smoke tests in supabase/tests/. Supabase itself is stubbed (see
+# supabase/tests/stub_supabase.sql), so this catches SQL errors, broken
+# idempotency and RLS/constraint regressions, not Supabase-specific behaviour.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/schema.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/schema.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: nmstest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create test database
+        run: psql -X -v ON_ERROR_STOP=1 -d postgres -c 'create database nmstest'
+
+      - name: Stub Supabase auth
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/stub_supabase.sql
+
+      - name: Apply schema.sql
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/schema.sql
+
+      - name: Apply schema.sql again (must be idempotent)
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/schema.sql
+
+      - name: Run corvette_parts tests
+        run: psql -X -q -v ON_ERROR_STOP=1 -f supabase/tests/corvette_parts.test.sql
